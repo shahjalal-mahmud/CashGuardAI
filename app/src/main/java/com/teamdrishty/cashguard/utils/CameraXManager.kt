@@ -16,6 +16,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.teamdrishty.cashguard.analysis.TFLiteCurrencyClassifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
@@ -31,7 +32,15 @@ class CameraXManager(private val context: Context) {
 
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var imageAnalyzer: ImageAnalysis? = null
-    private val classifier = TFLiteCurrencyClassifier(context) // Initialize TFLite classifier once
+    private val classifier = TFLiteCurrencyClassifier(context)
+
+    // Add these variables for better control
+    private var isAnalyzing = false
+    private var lastAnalysisTime = 0L
+    private val ANALYSIS_INTERVAL = 1500L // Analyze every 1.5 seconds
+    private val CONFIDENCE_THRESHOLD = 0.8f // Only accept results with 80%+ confidence
+    private var consecutiveHighConfidenceCount = 0
+    private val REQUIRED_CONSECUTIVE_DETECTIONS = 2 // Require 2 consecutive high-confidence detections
 
     fun startCamera(
         previewView: PreviewView,
@@ -54,41 +63,64 @@ class CameraXManager(private val context: Context) {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also { analysis ->
-                    // In the image analyzer section of CameraXManager.kt
                     analysis.setAnalyzer(cameraExecutor) { image ->
-                        coroutineScope.launch(Dispatchers.IO) {
-                            try {
-                                val bitmap = image.toBitmap()
-                                val (label, confidence) = classifier.classify(bitmap)
+                        val currentTime = System.currentTimeMillis()
 
-                                // Enhanced logic for Bangladeshi 200 Taka note
-                                val isAuthentic = when {
-                                    label.contains("real", ignoreCase = true) -> true
-                                    label.contains("authentic", ignoreCase = true) -> true
-                                    label.contains("genuine", ignoreCase = true) -> true
-                                    else -> false
+                        // Only analyze if enough time has passed since last analysis
+                        if (!isAnalyzing && (currentTime - lastAnalysisTime) > ANALYSIS_INTERVAL) {
+                            isAnalyzing = true
+                            lastAnalysisTime = currentTime
+
+                            coroutineScope.launch(Dispatchers.IO) {
+                                try {
+                                    val bitmap = image.toBitmap()
+                                    val (label, confidence) = classifier.classify(bitmap)
+
+                                    Log.d("CameraXManager", "Classification: '$label', Confidence: $confidence")
+
+                                    // Only proceed if confidence is high enough
+                                    if (confidence >= CONFIDENCE_THRESHOLD) {
+                                        consecutiveHighConfidenceCount++
+                                        Log.d("CameraXManager", "High confidence detection #$consecutiveHighConfidenceCount")
+
+                                        // Only trigger result after multiple consistent detections
+                                        if (consecutiveHighConfidenceCount >= REQUIRED_CONSECUTIVE_DETECTIONS) {
+                                            // Enhanced logic for your specific labels
+                                            val isAuthentic = when {
+                                                label.contains("real", ignoreCase = true) -> true
+                                                label.contains("Real 200 Notes", ignoreCase = true) -> true
+                                                else -> false
+                                            }
+
+                                            val denomination = "200 Taka"
+
+                                            Log.d("CameraXManager", "Triggering result: Authentic=$isAuthentic")
+
+                                            onImageClassified(
+                                                ClassificationResult(
+                                                    isAuthentic = isAuthentic,
+                                                    denomination = denomination,
+                                                    confidence = confidence
+                                                )
+                                            )
+                                            // Reset counter after successful detection
+                                            consecutiveHighConfidenceCount = 0
+                                        }
+                                    } else {
+                                        Log.d("CameraXManager", "Low confidence: $confidence, resetting counter")
+                                        consecutiveHighConfidenceCount = 0 // Reset counter on low confidence
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("CameraXManager", "Image classification failed", e)
+                                    consecutiveHighConfidenceCount = 0
+                                } finally {
+                                    image.close()
+                                    isAnalyzing = false
                                 }
-
-                                val denomination = when {
-                                    label.contains("200") -> "200 Taka"
-                                    else -> "200 Taka" // Assuming you're only detecting 200 Taka notes
-                                }
-
-                                onImageClassified(
-                                    ClassificationResult(
-                                        isAuthentic = isAuthentic,
-                                        denomination = denomination,
-                                        confidence = confidence
-                                    )
-                                )
-                            } catch (e: Exception) {
-                                Log.e("CameraXManager", "Image classification failed", e)
-                                onImageClassified(
-                                    ClassificationResult(false, "Unknown", 0f)
-                                )
-                            } finally {
-                                image.close()
                             }
+                        } else {
+                            // Skip this frame
+                            image.close()
                         }
                     }
                 }
