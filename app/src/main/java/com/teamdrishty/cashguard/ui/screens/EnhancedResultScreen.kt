@@ -14,10 +14,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.teamdrishty.cashguard.utils.ClassificationResult
 
 @Composable
-fun EnhancedResultScreen(navController: NavController, isAuthentic: Boolean, confidence: Float = 0.8f) {
+fun EnhancedResultScreen(navController: NavController, result: ClassificationResult) {
     val scrollState = rememberScrollState()
+    val isAuthentic = result.isAuthentic
+    val confidence = result.confidence
+    val denomination = result.denomination
 
     Column(
         modifier = Modifier
@@ -37,7 +41,7 @@ fun EnhancedResultScreen(navController: NavController, isAuthentic: Boolean, con
         Spacer(modifier = Modifier.height(24.dp))
 
         // Denomination Info
-        DenominationInfoCard()
+        DenominationInfoCard(denomination)
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -164,7 +168,7 @@ private fun SecurityFeatureItem(feature: String, status: String, isPassed: Boole
 }
 
 @Composable
-private fun DenominationInfoCard() {
+private fun DenominationInfoCard(denomination: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -175,7 +179,7 @@ private fun DenominationInfoCard() {
             modifier = Modifier.padding(20.dp)
         ) {
             Text(
-                text = "💵 Detected Denomination: 500 Taka",
+                text = "💵 Detected Denomination: $denomination",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1565C0)
