@@ -10,6 +10,7 @@ import com.google.gson.Gson
 import com.teamdrishty.cashguard.ui.screens.EnhancedResultScreen
 import com.teamdrishty.cashguard.ui.screens.HomeScreen
 import com.teamdrishty.cashguard.ui.screens.ScanScreen
+import com.teamdrishty.cashguard.ui.screens.SplashScreen
 import com.teamdrishty.cashguard.utils.ClassificationResult
 
 @Composable
@@ -18,8 +19,11 @@ fun Navigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "splash" // Changed from "home" to "splash"
     ) {
+        composable("splash") {
+            SplashScreen(navController = navController)
+        }
         composable("home") {
             HomeScreen(navController = navController)
         }
