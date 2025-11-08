@@ -71,6 +71,9 @@ dependencies {
     // Accompanist Permissions
     implementation(libs.accompanist.permissions)
 
+    // Material Icons
+    implementation(libs.androidx.compose.material.icons.extended)
+
     // TensorFlow Lite
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
