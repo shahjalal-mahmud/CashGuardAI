@@ -118,22 +118,6 @@ Type	Quantity	Description
 - Processing Time	2–3 seconds
 - False Positive Rate	<2%
 
-### 📁 Project Structure
-app/
-├── src/main/
-│   ├── java/com/teamdrishty/cashguard/
-│   │   ├── ui/
-│   │   │   ├── screens/          # All app screens
-│   │   │   ├── navigation/       # Navigation setup
-│   │   │   └── theme/            # App theming
-│   │   ├── analysis/             # AI classification logic
-│   │   ├── utils/                # Camera & utility classes
-│   │   └── model/                # Data models
-│   ├── assets/
-│   │   ├── model.tflite          # TensorFlow Lite model
-│   │   └── labels.txt            # Model labels
-│   └── res/                      # Resources
-
 ### 📬 Contact
 
 Team Lead: Md Shahajalal Mahmud
