@@ -51,19 +51,23 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.teamdrishty.cashguard.utils.ClassificationResult
 
-// Modern Color Palette
-private val SuccessGradient = Brush.linearGradient(
-    listOf(Color(0xFF00C853), Color(0xFF006C42))
+// Dynamic Color Palette that adapts to theme
+private val SuccessGradient @Composable get() = Brush.linearGradient(
+    listOf(
+        if (isSystemInDarkTheme()) Color(0xFF00E676) else Color(0xFF00C853),
+        if (isSystemInDarkTheme()) Color(0xFF004D40) else Color(0xFF006C42)
+    )
 )
-private val ErrorGradient = Brush.linearGradient(
-    listOf(Color(0xFFFF5252), Color(0xFFFF6D00))
+private val ErrorGradient @Composable get() = Brush.linearGradient(
+    listOf(
+        if (isSystemInDarkTheme()) Color(0xFFFF6E6E) else Color(0xFFFF5252),
+        if (isSystemInDarkTheme()) Color(0xFFBF360C) else Color(0xFFFF6D00)
+    )
 )
-private val WarningGradient = Brush.linearGradient(
-    listOf(Color(0xFFFFC107), Color(0xFFFF9800))
-)
-private val SurfaceGradient = Brush.linearGradient(
-    listOf(Color(0xFF667EEA), Color(0xFF764BA2))
-)
+private val WarningColor @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFD740) else Color(0xFFFFC107)
+private val SuccessLight @Composable get() = if (isSystemInDarkTheme()) Color(0xFF1B5E20) else Color(0xFFE8F5E8)
+private val ErrorLight @Composable get() = if (isSystemInDarkTheme()) Color(0xFFB71C1C) else Color(0xFFFFEBEE)
+private val WarningLight @Composable get() = if (isSystemInDarkTheme()) Color(0xFF4A3000) else Color(0xFFFFF8E1)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +114,7 @@ fun EnhancedResultScreen(navController: NavController, result: ClassificationRes
                     onClick = { navController.navigate("scan") },
                     modifier = Modifier.weight(1f),
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
                     Icon(Icons.Filled.Replay, contentDescription = "Scan Again")
                     Spacer(modifier = Modifier.width(8.dp))
@@ -125,8 +129,8 @@ fun EnhancedResultScreen(navController: NavController, result: ClassificationRes
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-            contentPadding = PaddingValues(24.dp, 24.dp, 24.dp, 100.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp), // Reduced spacing
+            contentPadding = PaddingValues(24.dp, 16.dp, 24.dp, 100.dp) // Adjusted padding
         ) {
             item {
                 ResultHeroSection(isAuthentic, confidence, denomination)
@@ -165,7 +169,7 @@ private fun ResultHeroSection(isAuthentic: Boolean, confidence: Float, denominat
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(180.dp) // Reduced height for better balance
                 .background(
                     brush = if (isAuthentic) SuccessGradient else ErrorGradient
                 )
@@ -173,30 +177,32 @@ private fun ResultHeroSection(isAuthentic: Boolean, confidence: Float, denominat
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(20.dp), // Reduced padding
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Icon(
                     imageVector = if (isAuthentic) Icons.Filled.Verified else Icons.Filled.Warning,
                     contentDescription = null,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(42.dp), // Slightly smaller icon
                     tint = Color.White
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp)) // Reduced spacing
 
                 Text(
                     text = if (isAuthentic) "AUTHENTIC" else "COUNTERFEIT",
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.headlineMedium, // Slightly smaller
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
                     textAlign = TextAlign.Center
                 )
 
+                Spacer(modifier = Modifier.height(4.dp)) // Added small spacing
+
                 Text(
                     text = denomination,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall, // Smaller denomination text
                     color = Color.White.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center
                 )
@@ -206,14 +212,14 @@ private fun ResultHeroSection(isAuthentic: Boolean, confidence: Float, denominat
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .padding(12.dp) // Reduced padding
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color.White.copy(alpha = 0.2f))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                    .padding(horizontal = 10.dp, vertical = 5.dp) // Reduced padding
             ) {
                 Text(
                     text = "${(confidence * 100).toInt()}%",
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.bodySmall, // Smaller text
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
@@ -238,22 +244,22 @@ private fun ConfidenceMeter(confidence: Float, isAuthentic: Boolean) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(16.dp) // Reduced padding
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 12.dp) // Reduced spacing
             ) {
                 Icon(
                     imageVector = Icons.Filled.Shield,
                     contentDescription = null,
                     tint = if (isAuthentic) Color(0xFF00C853) else Color(0xFFFF5252),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp) // Slightly smaller icon
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(10.dp)) // Reduced spacing
                 Text(
                     text = "AI Confidence Level",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium, // Slightly smaller
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -262,15 +268,15 @@ private fun ConfidenceMeter(confidence: Float, isAuthentic: Boolean) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(24.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .height(20.dp) // Smaller progress bar
+                    .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(animatedProgress)
-                        .height(24.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(10.dp))
                         .background(
                             brush = if (isAuthentic) SuccessGradient else ErrorGradient
                         )
@@ -279,16 +285,16 @@ private fun ConfidenceMeter(confidence: Float, isAuthentic: Boolean) {
                 // Percentage text inside progress bar
                 Text(
                     text = "${(animatedProgress * 100).toInt()}%",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelSmall, // Smaller text
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .padding(start = 12.dp)
+                        .padding(start = 10.dp) // Reduced padding
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp)) // Reduced spacing
 
             Text(
                 text = when {
@@ -324,21 +330,21 @@ private fun SecurityFeaturesAnalysis(isAuthentic: Boolean) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(16.dp) // Reduced padding
         ) {
             Text(
                 text = "Security Analysis",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 12.dp) // Reduced spacing
             )
 
             securityFeatures.chunked(2).forEach { rowFeatures ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(bottom = 8.dp), // Reduced spacing
+                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Reduced spacing
                 ) {
                     rowFeatures.forEach { feature ->
                         SecurityFeatureItem(
@@ -356,20 +362,20 @@ private fun SecurityFeaturesAnalysis(isAuthentic: Boolean) {
 private fun SecurityFeatureItem(feature: SecurityFeatureItemData, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
-            .height(80.dp),
+            .height(70.dp), // Reduced height
         colors = CardDefaults.cardColors(
             containerColor = when {
-                feature.isPassed == true -> Color(0xFFE8F5E8)
-                feature.isPassed == false -> Color(0xFFFFEBEE)
+                feature.isPassed == true -> SuccessLight
+                feature.isPassed == false -> ErrorLight
                 else -> MaterialTheme.colorScheme.surfaceVariant
             }
         ),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(12.dp) // Smaller radius
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(8.dp), // Reduced padding
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -377,15 +383,16 @@ private fun SecurityFeatureItem(feature: SecurityFeatureItemData, modifier: Modi
                 text = feature.name,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                lineHeight = 16.sp // Better line height
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp)) // Reduced spacing
             Text(
                 text = feature.status,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall, // Smaller text
                 color = when {
-                    feature.isPassed == true -> Color(0xFF2E7D32)
-                    feature.isPassed == false -> Color(0xFFD32F2F)
+                    feature.isPassed == true -> if (isSystemInDarkTheme()) Color(0xFF69F0AE) else Color(0xFF2E7D32)
+                    feature.isPassed == false -> if (isSystemInDarkTheme()) Color(0xFFFF6E6E) else Color(0xFFD32F2F)
                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                 },
                 fontWeight = FontWeight.SemiBold,
@@ -406,15 +413,15 @@ private fun DenominationDetails(denomination: String, isAuthentic: Boolean) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(16.dp) // Reduced padding
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 12.dp) // Reduced spacing
             ) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(28.dp) // Slightly smaller
                         .clip(CircleShape)
                         .background(
                             brush = if (isAuthentic) SuccessGradient else ErrorGradient
@@ -425,23 +432,23 @@ private fun DenominationDetails(denomination: String, isAuthentic: Boolean) {
                         text = "৳",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 14.sp // Smaller text
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(10.dp)) // Reduced spacing
                 Text(
                     text = "Detected Denomination",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium, // Slightly smaller
                     fontWeight = FontWeight.Bold
                 )
             }
 
             Text(
                 text = denomination,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineSmall, // Slightly smaller
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 12.dp)
+                modifier = Modifier.padding(bottom = 8.dp) // Reduced spacing
             )
 
             val features = when (denomination) {
@@ -491,20 +498,21 @@ private fun DenominationDetails(denomination: String, isAuthentic: Boolean) {
 
             features.forEach { feature ->
                 Row(
-                    modifier = Modifier.padding(vertical = 4.dp),
+                    modifier = Modifier.padding(vertical = 3.dp), // Reduced spacing
                     verticalAlignment = Alignment.Top
                 ) {
                     Icon(
                         imageVector = Icons.Filled.CheckCircle,
                         contentDescription = null,
-                        tint = Color(0xFF00C853),
-                        modifier = Modifier.size(16.dp)
+                        tint = if (isSystemInDarkTheme()) Color(0xFF69F0AE) else Color(0xFF00C853),
+                        modifier = Modifier.size(14.dp) // Smaller icon
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp)) // Reduced spacing
                     Text(
                         text = feature,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 18.sp // Better line height
                     )
                 }
             }
@@ -517,34 +525,35 @@ private fun WarningAlertCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFF8E1)
+            containerColor = WarningLight
         ),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(16.dp), // Reduced padding
             verticalAlignment = Alignment.Top
         ) {
             Icon(
                 imageVector = Icons.Filled.Warning,
                 contentDescription = null,
-                tint = Color(0xFFFF6D00),
-                modifier = Modifier.size(24.dp)
+                tint = WarningColor,
+                modifier = Modifier.size(22.dp) // Slightly smaller
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp)) // Reduced spacing
             Column {
                 Text(
                     text = "Security Alert",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFF6D00)
+                    color = WarningColor
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(3.dp)) // Reduced spacing
                 Text(
                     text = "This note has failed multiple security checks. Please verify manually and consider reporting to authorities if confirmed counterfeit.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFFFF6D00).copy(alpha = 0.9f)
+                    color = WarningColor.copy(alpha = 0.9f),
+                    lineHeight = 18.sp // Better line height
                 )
             }
         }
