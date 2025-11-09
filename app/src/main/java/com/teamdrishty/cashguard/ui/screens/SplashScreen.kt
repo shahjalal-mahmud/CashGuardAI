@@ -263,7 +263,7 @@ fun SplashScreen(navController: NavController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "AI",
+                        text = "Cg",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White,
