@@ -50,19 +50,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
-// Modern Color Palette
-private val PrimaryGradientStart = Color(0xFF00C853)
-private val PrimaryGradientEnd = Color(0xFF006C42)
-private val SurfaceVariant = Color(0xFFF8F9FA)
-private val SuccessGreen = Color(0xFF00E676)
-private val WarningAmber = Color(0xFFFFC107)
-private val ErrorRed = Color(0xFFFF5252)
+// Dynamic Color Palette that adapts to theme
+private val PrimaryGradientStart @Composable get() = if (isSystemInDarkTheme()) Color(0xFF00E676) else Color(0xFF00C853)
+private val PrimaryGradientEnd @Composable get() = if (isSystemInDarkTheme()) Color(0xFF004D40) else Color(0xFF006C42)
+private val SuccessGreen @Composable get() = if (isSystemInDarkTheme()) Color(0xFF69F0AE) else Color(0xFF00E676)
+private val WarningAmber @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFD740) else Color(0xFFFFC107)
+private val ErrorRed @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFF6E6E) else Color(0xFFFF5252)
 
-private val FeatureGradients = listOf(
-    Brush.linearGradient(listOf(Color(0xFF667EEA), Color(0xFF764BA2))),
-    Brush.linearGradient(listOf(Color(0xFFF093FB), Color(0xFFF5576C))),
-    Brush.linearGradient(listOf(Color(0xFF4FACFE), Color(0xFF00F2FE))),
-    Brush.linearGradient(listOf(Color(0xFF43E97B), Color(0xFF38F9D7)))
+private val FeatureGradients @Composable get() = listOf(
+    Brush.linearGradient(listOf(
+        if (isSystemInDarkTheme()) Color(0xFF7C4DFF) else Color(0xFF667EEA),
+        if (isSystemInDarkTheme()) Color(0xFF512DA8) else Color(0xFF764BA2)
+    )),
+    Brush.linearGradient(listOf(
+        if (isSystemInDarkTheme()) Color(0xFFFF80AB) else Color(0xFFF093FB),
+        if (isSystemInDarkTheme()) Color(0xFFF50057) else Color(0xFFF5576C)
+    )),
+    Brush.linearGradient(listOf(
+        if (isSystemInDarkTheme()) Color(0xFF40C4FF) else Color(0xFF4FACFE),
+        if (isSystemInDarkTheme()) Color(0xFF01579B) else Color(0xFF00F2FE)
+    )),
+    Brush.linearGradient(listOf(
+        if (isSystemInDarkTheme()) Color(0xFF76FF03) else Color(0xFF43E97B),
+        if (isSystemInDarkTheme()) Color(0xFF388E3C) else Color(0xFF38F9D7)
+    ))
 )
 
 data class SecurityFeature(
@@ -70,6 +81,11 @@ data class SecurityFeature(
     val description: String,
     val gradient: Brush
 )
+
+@Composable
+fun isSystemInDarkTheme(): Boolean {
+    return MaterialTheme.colorScheme.background == MaterialTheme.colorScheme.surface
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -138,7 +154,7 @@ fun HomeScreen(navController: NavController) {
                     imageVector = Icons.Filled.PhotoCamera,
                     contentDescription = "Scan Currency",
                     modifier = Modifier.size(32.dp),
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -199,9 +215,7 @@ fun HeroScanCard(navController: NavController) {
                 .fillMaxSize()
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(PrimaryGradientStart, PrimaryGradientEnd),
-                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                        end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                        colors = listOf(PrimaryGradientStart, PrimaryGradientEnd)
                     )
                 )
         ) {
@@ -264,10 +278,10 @@ fun QuickStatsSection() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp) // Reduced spacing
     ) {
         StatCard(
-            title = "Scans Today",
+            title = "Scans\nToday", // Added line break
             value = "12",
             modifier = Modifier.weight(1f),
             color = PrimaryGradientStart
@@ -279,7 +293,7 @@ fun QuickStatsSection() {
             color = SuccessGreen
         )
         StatCard(
-            title = "Fake Detected",
+            title = "Fake\nDetected", // Added line break
             value = "0",
             modifier = Modifier.weight(1f),
             color = WarningAmber
@@ -291,7 +305,7 @@ fun QuickStatsSection() {
 fun StatCard(title: String, value: String, modifier: Modifier = Modifier, color: Color) {
     Card(
         modifier = modifier
-            .height(80.dp)
+            .height(90.dp) // Increased height for better text display
             .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -301,7 +315,7 @@ fun StatCard(title: String, value: String, modifier: Modifier = Modifier, color:
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(8.dp), // Reduced padding
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -309,13 +323,16 @@ fun StatCard(title: String, value: String, modifier: Modifier = Modifier, color:
                 text = value,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = color
+                color = color,
+                textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.height(4.dp)) // Added spacing between value and title
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                lineHeight = 14.sp
             )
         }
     }
@@ -369,7 +386,6 @@ fun FeaturesGrid() {
                 rowFeatures.forEach { feature ->
                     FeatureCard(feature = feature, modifier = Modifier.weight(1f))
                 }
-                // Add empty cards if needed to maintain grid
                 if (rowFeatures.size < 2) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
